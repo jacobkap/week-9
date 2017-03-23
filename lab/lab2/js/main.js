@@ -19,14 +19,14 @@ this logic.
 *Overview*
 
 1. We need to know where we are currently (in the form of a lat/lng pair) so
-    that we can plot this location and later use it as the origin for our route.
-    Note: this has been provided for you. The application should automatically
-    determine your location when you open it.
+that we can plot this location and later use it as the origin for our route.
+Note: this has been provided for you. The application should automatically
+determine your location when you open it.
 2. We'll need to find some way of converting the text from an input box into
-    (at least one) lat/lng pair
+(at least one) lat/lng pair
 3. With both an origin and a destination, we should be able to get directions
 4. Directions should come back in a form which can be processed into a line which
-    we can then plot on our map
+we can then plot on our map
 
 
 *Tasks*
@@ -58,10 +58,10 @@ it works BEFORE writing code you expect to use it. This can be done in the conso
 in a REST client like Postman mentioned above.
 
 Questions you should ask yourself:
-  - What are the inputs?
-  - How does the output look?
-  - What can I do with the output?
-  - Can I get a lat/lng from the output?
+- What are the inputs?
+- How does the output look?
+- What can I do with the output?
+- Can I get a lat/lng from the output?
 
 
 Task 2: Use Mapzen's 'Mobility' API to generate a route based on your origin and destination
@@ -116,6 +116,8 @@ Task 6: (stretch) See if you can refocus the map to roughly the bounding box of 
 
 ===================== */
 
+
+// Current location
 var state = {
   position: {
     marker: null,
@@ -124,16 +126,16 @@ var state = {
 };
 
 /* We'll use underscore's `once` function to make sure this only happens
- *  one time even if weupdate the position later
- */
+*  one time even if we update the position later
+*/
 var goToOrigin = _.once(function(lat, lng) {
-  map.flyTo([lat, lng], 14);
+  map.setView([lat, lng], 13);
 });
 
 
 /* Given a lat and a long, we should create a marker, store it
- *  somewhere, and add it to the map
- */
+*  somewhere, and add it to the map
+*/
 var updatePosition = function(lat, lng, updated) {
   if (state.position.marker) { map.removeLayer(state.position.marker); }
   state.position.marker = L.circleMarker([lat, lng], {color: "blue"});
@@ -154,8 +156,8 @@ $(document).ready(function() {
 
 
   /* Every time a key is lifted while typing in the #dest input, disable
-   * the #calculate button if no text is in the input
-   */
+  * the #calculate button if no text is in the input
+  */
   $('#dest').keyup(function(e) {
     if ($('#dest').val().length === 0) {
       $('#calculate').attr('disabled', true);
@@ -166,10 +168,23 @@ $(document).ready(function() {
 
   // click handler for the "calculate" button (probably you want to do something with this)
   $("#calculate").click(function(e) {
-    var dest = $('#dest').val();
-    console.log(dest);
+    address = $('#dest').val();
+    mapzen_url = "https://search.mapzen.com/v1/search?&api_key=mapzen-3CzaEbE&text=" +
+    address +
+    "&focus.point.lat=" + state.position.marker._latlng.lat +
+    "&focus.point.lon=" + state.position.marker._latlng.lng +
+    "&size=1";
+
+    main_function();
   });
 
 });
+var results;
+main_function = function() {
+  $.ajax(mapzen_url).then(function(data) {
+    results = data;
+    get_ciphered_route(data); // basically does everything.
+  });
 
 
+};
